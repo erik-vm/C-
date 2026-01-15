@@ -1,0 +1,247 @@
+@page
+@model PlayModel
+@{
+    ViewData["Title"] = "Play Game";
+}
+
+<div class="container-fluid mt-4">
+    @if (Model.Game == null)
+    {
+        <div class="alert alert-warning">
+            <h4>No active game found</h4>
+            <p>Please start a new game from the <a href="/">home page</a>.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <!-- Game Info -->
+                <div class="card shadow mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-4 text-center">
+                                <h5>@Model.Game.Player1.Name</h5>
+                                <span class="badge bg-danger">Red</span>
+                                @if (Model.Game.Player1.IsAi)
+                                {
+                                    <span class="badge bg-secondary">AI - @Model.Game.Player1.AiDifficulty</span>
+                                }
+                            </div>
+                            <div class="col-4 text-center">
+                                <h6 class="text-muted">Current Turn</h6>
+                                <h4>@Model.Game.CurrentPlayer.Name</h4>
+                                @if (Model.Game.IsGameOver)
+                                {
+                                    if (Model.Game.IsDraw)
+                                    {
+                                        <div class="alert alert-info mt-2">It's a Draw!</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-success mt-2">@Model.Game.Winner!.Name Wins! 🎉</div>
+                                    }
+                                }
+                            </div>
+                            <div class="col-4 text-center">
+                                <h5>@Model.Game.Player2.Name</h5>
+                                <span class="badge bg-warning text-dark">Yellow</span>
+                                @if (Model.Game.Player2.IsAi)
+                                {
+                                    <span class="badge bg-secondary">AI - @Model.Game.Player2.AiDifficulty</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Board -->
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        @if (!Model.Game.IsGameOver && !Model.Game.CurrentPlayer.IsAi)
+                        {
+                            <div class="text-center mb-3">
+                                <h6>Click a column to make your move</h6>
+                            </div>
+                        }
+
+                        <div class="game-board-container" style="max-width: 700px; margin: 0 auto;">
+                            <div class="game-board" style="display: grid; grid-template-columns: repeat(@Model.Game.Board.Width, 1fr); gap: 5px;">
+                                @for (int row = 0; row < Model.Game.Board.Height; row++)
+                                {
+                                    @for (int col = 0; col < Model.Game.Board.Width; col++)
+                                    {
+                                        var cell = Model.Game.Board.GetCell(row, col);
+                                        var cellClass = "cell";
+                                        var pieceClass = "";
+                                        var isColumnFull = Model.Game.Board.IsColumnFull(col);
+                                        var isClickable = !Model.Game.IsGameOver && !Model.Game.CurrentPlayer.IsAi && !isColumnFull;
+
+                                        if (cell != null)
+                                        {
+                                            pieceClass = cell == Model.Game.Player1 ? "piece-red" : "piece-yellow";
+                                        }
+
+                                        <div class="@cellClass @(isClickable ? "clickable-cell" : "")" data-column="@col" data-row="@row">
+                                            @if (cell != null)
+                                            {
+                                                <div class="@pieceClass"></div>
+                                            }
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+
+                        @if (!Model.Game.IsGameOver && Model.Game.CurrentPlayer.IsAi)
+                        {
+                            <div class="mt-4 text-center">
+                                <div class="spinner-border text-info" role="status">
+                                    <span class="visually-hidden">AI is thinking...</span>
+                                </div>
+                                <p class="mt-2">🤖 @Model.Game.CurrentPlayer.Name is thinking...</p>
+                                <form id="aiMoveForm" method="post" asp-page-handler="ProcessAiMove">
+                                </form>
+                            </div>
+                        }
+
+                        <form id="makeMoveForm" method="post" asp-page-handler="MakeMove" style="display: none;">
+                            <input type="hidden" id="columnInput" name="column" value="" />
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Game Controls -->
+                <div class="mt-3 d-flex gap-2">
+                    @if (!Model.Game.IsGameOver)
+                    {
+                        <form method="post" asp-page-handler="SaveGame" class="flex-fill">
+                            <button type="submit" class="btn btn-outline-secondary w-100">💾 Save Game</button>
+                        </form>
+                    }
+                    @if (Model.Game.IsGameOver)
+                    {
+                        <form method="post" asp-page-handler="PlayAgain" class="flex-fill">
+                            <button type="submit" class="btn btn-success w-100">🔄 Play Again</button>
+                        </form>
+                    }
+                    <a href="/" class="btn btn-outline-danger flex-fill">❌ Quit</a>
+                </div>
+
+                <!-- Game Info -->
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h6>Game Configuration:</h6>
+                        <ul class="mb-0">
+                            <li>Board: @Model.Game.Board.Height x @Model.Game.Board.Width (@Model.Game.Board.Shape)</li>
+                            <li>Win Condition: @Model.Game.WinningCondition in a row</li>
+                            <li>Moves Played: @Model.MoveCount</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .cell {
+        aspect-ratio: 1;
+        background-color: #0066cc;
+        border-radius: 10%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px;
+        min-height: 50px;
+        transition: background-color 0.2s;
+    }
+
+    .clickable-cell {
+        cursor: pointer;
+    }
+
+    .clickable-cell:hover {
+        background-color: #0088ff;
+    }
+
+    .piece-red, .piece-yellow {
+        width: 80%;
+        height: 80%;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        pointer-events: none;
+    }
+
+    .piece-red {
+        background: radial-gradient(circle at 30% 30%, #ff6666, #cc0000);
+    }
+
+    .piece-yellow {
+        background: radial-gradient(circle at 30% 30%, #ffff99, #ffcc00);
+    }
+
+    .game-board {
+        background-color: #004499;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // SignalR setup for real-time multiplayer
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/gameHub")
+            .withAutomaticReconnect()
+            .build();
+
+        const gameSessionId = '@HttpContext.Session.Id';
+
+        connection.on("GameUpdated", function() {
+            console.log("Game updated, reloading page...");
+            location.reload();
+        });
+
+        connection.start()
+            .then(function() {
+                console.log("SignalR connected");
+                return connection.invoke("JoinGame", gameSessionId);
+            })
+            .then(function() {
+                console.log("Joined game room: " + gameSessionId);
+            })
+            .catch(function(err) {
+                console.error("SignalR connection error: " + err.toString());
+            });
+
+        window.addEventListener('beforeunload', function() {
+            connection.invoke("LeaveGame", gameSessionId).catch(function(err) {
+                console.error(err.toString());
+            });
+        });
+
+        // Auto-submit AI move after a delay
+        const aiMoveForm = document.getElementById('aiMoveForm');
+        if (aiMoveForm) {
+            setTimeout(function() {
+                aiMoveForm.submit();
+            }, @BLL.GameConfiguration.WebAiDelayMs);
+        }
+
+        // Handle column clicks for player moves
+        const clickableCells = document.querySelectorAll('.clickable-cell');
+        const makeMoveForm = document.getElementById('makeMoveForm');
+        const columnInput = document.getElementById('columnInput');
+
+        clickableCells.forEach(function(cell) {
+            cell.addEventListener('click', function() {
+                const column = this.getAttribute('data-column');
+                columnInput.value = column;
+                makeMoveForm.submit();
+            });
+        });
+    });
+</script>

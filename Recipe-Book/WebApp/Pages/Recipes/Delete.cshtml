@@ -1,0 +1,63 @@
+@page
+@model WebApp.Pages.Recipes.DeleteModel
+@{
+    ViewData["Title"] = "Delete Recipe";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Delete Recipe
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <strong>Warning!</strong> You are about to delete this recipe. This action cannot be undone.
+                    </div>
+
+                    <h4 class="mb-3">@Model.Recipe.Name</h4>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">Description:</dt>
+                        <dd class="col-sm-8">@Model.Recipe.Description.Substring(0, Math.Min(100, Model.Recipe.Description.Length))...</dd>
+
+                        <dt class="col-sm-4">Difficulty:</dt>
+                        <dd class="col-sm-8">@Model.Recipe.DifficultyLevel</dd>
+
+                        <dt class="col-sm-4">Total Time:</dt>
+                        <dd class="col-sm-8">@Model.Recipe.TotalTimeMinutes minutes</dd>
+
+                        <dt class="col-sm-4">Servings:</dt>
+                        <dd class="col-sm-8">@Model.Recipe.BaseServingSize</dd>
+                    </dl>
+
+                    <form method="post" id="deleteForm">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-page="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="deleteButton">
+                                <i class="bi bi-trash"></i> Yes, Delete Recipe
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('deleteForm').addEventListener('submit', function(e) {
+            const confirmed = confirm('Are you absolutely sure you want to delete "@Model.Recipe.Name"? This action cannot be undone.');
+            if (!confirmed) {
+                e.preventDefault();
+            }
+        });
+    </script>
+}

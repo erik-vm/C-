@@ -1,0 +1,317 @@
+@page
+@model WebApp.Pages.Recipes.IndexModel
+@{
+    ViewData["Title"] = "Recipes";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a asp-page="Deleted" class="btn btn-outline-secondary">
+            <i class="bi bi-trash"></i> Deleted Recipes
+        </a>
+        <a asp-page="Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> New Recipe
+        </a>
+    </div>
+
+    @if (Model.ExcludeAllergens.Any())
+    {
+        <div class="alert alert-warning" role="alert">
+            <i class="bi bi-shield-exclamation"></i>
+            <strong>Allergen Profile Active:</strong> Recipes containing the following allergens are hidden:
+            @foreach (var allergenId in Model.ExcludeAllergens)
+            {
+                var allergen = Model.AvailableAllergens.FirstOrDefault(a => a.Value == allergenId.ToString());
+                if (allergen != null)
+                {
+                    <span class="badge bg-danger text-white me-1">@allergen.Text</span>
+                }
+            }
+            <a asp-page="/Profile/AllergenProfile" class="alert-link ms-2">Manage Profile</a>
+        </div>
+    }
+
+    <form method="get" class="mb-4">
+        <div class="card0">
+            <div class="card-header">
+                <div class="row g-2">
+                    <div class="col-md-8">
+                        <input type="text"
+                               asp-for="SearchTerm"
+                               class="form-control"
+                               placeholder="Search recipes by name, description, or ingredients...">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="collapse" data-bs-target="#advancedFilters">
+                            <i class="bi bi-funnel"></i> Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="collapse" id="advancedFilters">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- Categories Filter -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Categories</label>
+                            <select asp-for="CategoryIds" class="form-select" asp-items="Model.AvailableCategories" multiple size="5">
+                            </select>
+                            <small class="text-muted">Hold Ctrl (Cmd on Mac) to select multiple</small>
+                        </div>
+
+                        <!-- Difficulty Filter -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Difficulty</label>
+                            <select asp-for="DifficultyLevels" class="form-select" asp-items="Model.AvailableDifficulties" multiple size="3">
+                            </select>
+                        </div>
+
+                        <!-- Max Time Filter -->
+                        <div class="col-md-4">
+                            <label asp-for="MaxTotalTime" class="form-label fw-bold">Max Total Time (minutes)</label>
+                            <input asp-for="MaxTotalTime" type="number" class="form-control" placeholder="e.g., 60">
+                        </div>
+
+                        <!-- Must Contain Ingredients -->
+                        <div class="col-md-4">
+                            <label asp-for="MustContainIngredients" class="form-label fw-bold">Must Contain Ingredients</label>
+                            <select asp-for="MustContainIngredients" class="form-select" asp-items="Model.AvailableIngredients" multiple size="5">
+                            </select>
+                        </div>
+
+                        <!-- Must NOT Contain Ingredients -->
+                        <div class="col-md-4">
+                            <label asp-for="MustNotContainIngredients" class="form-label fw-bold">Must NOT Contain</label>
+                            <select asp-for="MustNotContainIngredients" class="form-select" asp-items="Model.AvailableIngredients" multiple size="5">
+                            </select>
+                        </div>
+
+                        <!-- Exclude Allergens -->
+                        <div class="col-md-6">
+                            <label asp-for="ExcludeAllergens" class="form-label fw-bold">Exclude Allergens</label>
+                            <select asp-for="ExcludeAllergens" class="form-select" asp-items="Model.AvailableAllergens" multiple size="5">
+                            </select>
+                            <small class="text-muted">Recipes with these allergens will be hidden</small>
+                        </div>
+
+                        <!-- Dietary Filters -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Dietary Restrictions</label>
+                            <div class="form-check">
+                                <input asp-for="VegetarianOnly" class="form-check-input" type="checkbox">
+                                <label asp-for="VegetarianOnly" class="form-check-label">
+                                    Vegetarian only (all required ingredients must be vegetarian)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input asp-for="VeganOnly" class="form-check-input" type="checkbox">
+                                <label asp-for="VeganOnly" class="form-check-label">
+                                    Vegan only (all required ingredients must be vegan)
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search"></i> Apply Filters
+                            </button>
+                            <a asp-page="Index" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Clear All
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    @if (!Model.PagedResult.Items.Any())
+    {
+        <div class="alert alert-info text-center" role="alert">
+            @if (string.IsNullOrWhiteSpace(Model.SearchTerm) &&
+                !Model.CategoryIds.Any() &&
+                !Model.DifficultyLevels.Any() &&
+                !Model.MustContainIngredients.Any() &&
+                !Model.MustNotContainIngredients.Any() &&
+                !Model.ExcludeAllergens.Any() &&
+                !Model.VegetarianOnly &&
+                !Model.VeganOnly)
+            {
+                <p>No recipes found. <a asp-page="Create">Create your first recipe!</a></p>
+            }
+            else
+            {
+                <p>No recipes match your filters. <a asp-page="Index">Clear filters</a> to see all recipes.</p>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <p class="text-muted mb-0">
+                    Showing @Model.PagedResult.Items.Count of @Model.PagedResult.TotalCount recipe(s)
+                    @if(Model.VegetarianOnly)
+                    {
+                        <span class="badge bg-success">Vegetarian</span>
+                    }
+                    @if(Model.VeganOnly)
+                    {
+                        <span class="badge bg-success">Vegan</span>
+                    }
+                </p>
+            </div>
+            <div>
+                <select asp-for="PageSize" asp-items="Model.PageSizeOptions" class="form-select form-select-sm" id="pageSizeSelect"></select>
+            </div>
+        </div>
+
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+            @foreach (var recipe in Model.PagedResult.Items)
+            {
+                <div class="col">
+                    <div class="card h-100 recipe-card">
+                        <div class="card-body">
+                            <h5 class="card-title">@recipe.Name</h5>
+                            <p class="card-text text-muted">
+                                @{
+                                    var description = recipe.Description.Replace("**", "").Replace("\n", " ");
+                                    var maxLength = 100;
+                                    var displayDescription = description.Length > maxLength
+                                        ? description.Substring(0, maxLength) + "..."
+                                        : description;
+                                }
+                                @displayDescription
+                            </p>
+
+                            <div class="mb-2">
+                                <span class="badge bg-primary">@recipe.DifficultyLevel</span>
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-clock"></i> @recipe.TotalTimeMinutes min
+                                </span>
+                                <span class="badge bg-info">
+                                    <i class="bi bi-people"></i> @recipe.BaseServingSize servings
+                                </span>
+                            </div>
+
+                            @if (recipe.HasAllergens)
+                            {
+                                <div class="allergen-badges mb-2">
+                                    @foreach (var allergen in recipe.AllergenWarnings.Take(3))
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-exclamation-triangle"></i> @allergen
+                                        </span>
+                                    }
+                                    @if (recipe.AllergenWarnings.Count > 3)
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            +@(recipe.AllergenWarnings.Count - 3) more
+                                        </span>
+                                    }
+                                </div>
+                            }
+
+                            @if (recipe.Categories.Any())
+                            {
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-tag"></i> @string.Join(", ", recipe.Categories)
+                                    </small>
+                                </div>
+                            }
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a asp-page="Details" asp-route-id="@recipe.Id"
+                               class="btn btn-sm btn-primary w-100">
+                                <i class="bi bi-eye"></i> View Recipe
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.PagedResult.TotalPages > 1)
+        {
+            <nav aria-label="Recipe pagination">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(Model.PagedResult.HasPreviousPage ? "" : "disabled")">
+                        <a class="page-link"
+                           asp-page="Index"
+                           asp-route-searchTerm="@Model.SearchTerm"
+                           asp-route-pageNumber="@(Model.PageNumber - 1)"
+                           asp-route-pageSize="@Model.PageSize"
+                           asp-route-categoryIds="@string.Join(",", Model.CategoryIds)"
+                           asp-route-difficultyLevels="@string.Join(",", Model.DifficultyLevels)"
+                           asp-route-maxTotalTime="@Model.MaxTotalTime"
+                           asp-route-vegetarianOnly="@Model.VegetarianOnly"
+                           asp-route-veganOnly="@Model.VeganOnly">
+                            Previous
+                        </a>
+                    </li>
+
+                    @for (int i = 1; i <= Model.PagedResult.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                            <a class="page-link"
+                               asp-page="Index"
+                               asp-route-searchTerm="@Model.SearchTerm"
+                               asp-route-pageNumber="@i"
+                               asp-route-pageSize="@Model.PageSize"
+                               asp-route-categoryIds="@string.Join(",", Model.CategoryIds)"
+                               asp-route-difficultyLevels="@string.Join(",", Model.DifficultyLevels)"
+                               asp-route-maxTotalTime="@Model.MaxTotalTime"
+                               asp-route-vegetarianOnly="@Model.VegetarianOnly"
+                               asp-route-veganOnly="@Model.VeganOnly">
+                                @i
+                            </a>
+                        </li>
+                    }
+
+                    <li class="page-item @(Model.PagedResult.HasNextPage ? "" : "disabled")">
+                        <a class="page-link"
+                           asp-page="Index"
+                           asp-route-searchTerm="@Model.SearchTerm"
+                           asp-route-pageNumber="@(Model.PageNumber + 1)"
+                           asp-route-pageSize="@Model.PageSize"
+                           asp-route-categoryIds="@string.Join(",", Model.CategoryIds)"
+                           asp-route-difficultyLevels="@string.Join(",", Model.DifficultyLevels)"
+                           asp-route-maxTotalTime="@Model.MaxTotalTime"
+                           asp-route-vegetarianOnly="@Model.VegetarianOnly"
+                           asp-route-veganOnly="@Model.VeganOnly">
+                            Next
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pageSizeSelect = document.getElementById('pageSizeSelect');
+            if (pageSizeSelect) {
+                pageSizeSelect.addEventListener('change', function() {
+                    // Build URL with all current query parameters
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('pageSize', this.value);
+                    url.searchParams.set('pageNumber', '1'); // Reset to page 1 when changing page size
+
+                    // Reload page with new parameters
+                    window.location.href = url.toString();
+                });
+            }
+        });
+    </script>
+}

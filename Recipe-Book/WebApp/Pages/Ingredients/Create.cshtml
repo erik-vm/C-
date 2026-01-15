@@ -1,0 +1,98 @@
+@page
+@model WebApp.Pages.Ingredients.CreateModel
+@{
+    ViewData["Title"] = "Create Ingredient";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Create New Ingredient</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label asp-for="Input.Name" class="form-label"></label>
+                            <input asp-for="Input.Name" class="form-control" placeholder="e.g., Basil, Paprika, etc." />
+                            <span asp-validation-for="Input.Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.DefaultUnit" class="form-label">Default Unit</label>
+                                <select asp-for="Input.DefaultUnit" class="form-select" asp-items="Model.MeasurementUnits">
+                                    <option value="">Select a unit</option>
+                                </select>
+                                <span asp-validation-for="Input.DefaultUnit" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.Category" class="form-label">Category</label>
+                                <select asp-for="Input.Category" class="form-select" asp-items="Model.IngredientCategories">
+                                    <option value="">Select a category</option>
+                                </select>
+                                <span asp-validation-for="Input.Category" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Dietary Information</label>
+                            <div class="form-check">
+                                <input asp-for="Input.IsVegetarian" class="form-check-input" type="checkbox" id="vegetarianCheck">
+                                <label class="form-check-label" for="vegetarianCheck">
+                                    Vegetarian-friendly
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input asp-for="Input.IsVegan" class="form-check-input" type="checkbox" id="veganCheck">
+                                <label class="form-check-label" for="veganCheck">
+                                    Vegan-friendly
+                                </label>
+                            </div>
+                            <small class="text-muted">Note: Vegan items are automatically vegetarian</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Allergens (if any)</label>
+                            <div class="row">
+                                @foreach (var allergen in Model.AvailableAllergens)
+                                {
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="Input.AllergenIds" value="@allergen.Value" id="allergen_@allergen.Value">
+                                            <label class="form-check-label" for="allergen_@allergen.Value">
+                                                @allergen.Text
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-page="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-lg"></i> Create Ingredient
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-check vegetarian when vegan is checked
+        document.getElementById('veganCheck').addEventListener('change', function() {
+            if (this.checked) {
+                document.getElementById('vegetarianCheck').checked = true;
+            }
+        });
+    </script>
+}

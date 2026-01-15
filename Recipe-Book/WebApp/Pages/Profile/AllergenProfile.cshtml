@@ -1,0 +1,92 @@
+@page
+@model WebApp.Pages.Profile.AllergenProfileModel
+@{
+    ViewData["Title"] = "Allergen Profile";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0"><i class="bi bi-shield-exclamation"></i> Allergen Safety Profile</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>Safety Feature:</strong> Select the allergens you need to avoid.
+                        Recipes containing ANY of these allergens will be automatically hidden from search results.
+                        Your preferences are saved and will persist across sessions.
+                    </div>
+
+                    <form method="post">
+                        <div class="mb-3">
+                            <label asp-for="ExcludedAllergenIds" class="form-label fw-bold">
+                                <i class="bi bi-x-circle"></i> Allergens to Exclude
+                            </label>
+                            <select asp-for="ExcludedAllergenIds"
+                                    class="form-select"
+                                    asp-items="Model.AvailableAllergens"
+                                    multiple
+                                    size="10">
+                            </select>
+                            <small class="text-muted">Hold Ctrl (Cmd on Mac) to select multiple allergens</small>
+                        </div>
+
+                        @if (Model.ExcludedAllergenIds.Any())
+                        {
+                            <div class="alert alert-info" role="alert">
+                                <i class="bi bi-info-circle"></i>
+                                <strong>Currently Avoiding:</strong>
+                                <div class="mt-2">
+                                    @foreach (var allergenId in Model.ExcludedAllergenIds)
+                                    {
+                                        var allergen = Model.AvailableAllergens.FirstOrDefault(a => a.Value == allergenId.ToString());
+                                        if (allergen != null)
+                                        {
+                                            <span class="badge bg-danger text-white me-1 mb-1">
+                                                <i class="bi bi-x-circle"></i> @allergen.Text
+                                            </span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Save Profile
+                                </button>
+                                <a asp-page="/Index" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left"></i> Back to Home
+                                </a>
+                            </div>
+                            @if (Model.ExcludedAllergenIds.Any())
+                            {
+                                <button type="submit" asp-page-handler="Clear" class="btn btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Clear Profile
+                                </button>
+                            }
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-question-circle"></i> How It Works</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><strong>Automatic Filtering:</strong> When you save allergens here, all recipe searches will automatically exclude recipes containing those allergens.</li>
+                        <li><strong>Safety First:</strong> If ANY ingredient in a recipe contains an excluded allergen, the entire recipe is hidden.</li>
+                        <li><strong>Persistent:</strong> Your preferences are saved in a secure cookie and will be remembered across browser sessions.</li>
+                        <li><strong>Override Option:</strong> You can always temporarily view all recipes by clearing your profile.</li>
+                        <li><strong>Recipe Details:</strong> Allergen warnings are clearly displayed on all recipe cards and detail pages.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

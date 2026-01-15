@@ -1,0 +1,135 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Hyper Connect-X";
+}
+
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-3">🎮 Hyper Connect-X</h1>
+        <p class="lead">Classic Connect-4 game with customizable board and AI opponents</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">New Game Setup</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Player 1</label>
+                                <select class="form-select" asp-for="Player1Selection" id="player1Select" required>
+                                    <option value="">-- Select Player --</option>
+                                    <optgroup label="Human Players">
+                                        @foreach (var player in Model.HumanPlayers)
+                                        {
+                                            <option value="@player.PlayerName">@player.PlayerName (@player.TotalWins wins)</option>
+                                        }
+                                        <option value="new">➕ Create New Human Player</option>
+                                    </optgroup>
+                                    <optgroup label="AI Players">
+                                        @foreach (var ai in Model.AiPlayers)
+                                        {
+                                            <option value="@ai.PlayerName">@ai.PlayerName</option>
+                                        }
+                                    </optgroup>
+                                </select>
+                                <div id="newPlayer1Container" class="mt-2" style="display: none;">
+                                    <input type="text" class="form-control" asp-for="NewPlayer1Name" placeholder="Enter new player name" />
+                                    <span asp-validation-for="NewPlayer1Name" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Player 2</label>
+                                <select class="form-select" asp-for="Player2Selection" id="player2Select" required>
+                                    <option value="">-- Select Player --</option>
+                                    <optgroup label="Human Players">
+                                        @foreach (var player in Model.HumanPlayers)
+                                        {
+                                            <option value="@player.PlayerName">@player.PlayerName (@player.TotalWins wins)</option>
+                                        }
+                                        <option value="new">➕ Create New Human Player</option>
+                                    </optgroup>
+                                    <optgroup label="AI Players">
+                                        @foreach (var ai in Model.AiPlayers)
+                                        {
+                                            <option value="@ai.PlayerName">@ai.PlayerName</option>
+                                        }
+                                    </optgroup>
+                                </select>
+                                <div id="newPlayer2Container" class="mt-2" style="display: none;">
+                                    <input type="text" class="form-control" asp-for="NewPlayer2Name" placeholder="Enter new player name" />
+                                    <span asp-validation-for="NewPlayer2Name" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <h5 class="mb-3">Board Configuration</h5>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Board Height</label>
+                                <input type="number" class="form-control" asp-for="BoardHeight" min="@BLL.GameConfiguration.MinBoardSize" max="@BLL.GameConfiguration.MaxBoardSize" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Board Width</label>
+                                <input type="number" class="form-control" asp-for="BoardWidth" min="@BLL.GameConfiguration.MinBoardSize" max="@BLL.GameConfiguration.MaxBoardSize" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Win Condition</label>
+                                <input type="number" class="form-control" asp-for="WinCondition" min="@BLL.GameConfiguration.MinWinCondition" max="@BLL.GameConfiguration.MaxBoardSize" required />
+                                <small class="text-muted">Pieces in a row to win</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Board Shape</label>
+                            <select class="form-select" asp-for="BoardShape">
+                                <option value="Rectangle">Rectangle (Standard)</option>
+                                <option value="Cylinder">Cylinder (Edges wrap around)</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">Start Game</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <a href="/LoadGame" class="btn btn-outline-primary btn-lg w-100">
+                        📂 Load Saved Game
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="/Statistics" class="btn btn-outline-info btn-lg w-100">
+                        📊 View Statistics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function setupPlayerSelectToggle(selectId, containerId) {
+            const selectElement = document.getElementById(selectId);
+            const containerElement = document.getElementById(containerId);
+
+            selectElement.addEventListener('change', function() {
+                containerElement.style.display = this.value === 'new' ? 'block' : 'none';
+            });
+        }
+
+        setupPlayerSelectToggle('player1Select', 'newPlayer1Container');
+        setupPlayerSelectToggle('player2Select', 'newPlayer2Container');
+    });
+</script>

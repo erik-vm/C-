@@ -1,0 +1,103 @@
+@page
+@model WebApp.Pages.Profile.PreferencesModel
+@{
+    ViewData["Title"] = "Preferences";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="bi bi-gear"></i> Application Preferences</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-rulers"></i> Unit System
+                            </label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" asp-for="UnitSystem" value="Metric" id="metricRadio">
+                                <label class="form-check-label" for="metricRadio">
+                                    <strong>Metric</strong> (grams, kilograms, milliliters, liters)
+                                </label>
+                                <div class="text-muted ms-4">
+                                    <small>Used internationally. Scientific standard.</small>
+                                </div>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="radio" asp-for="UnitSystem" value="Imperial" id="imperialRadio">
+                                <label class="form-check-label" for="imperialRadio">
+                                    <strong>Imperial</strong> (ounces, pounds, fluid ounces, quarts, cups)
+                                </label>
+                                <div class="text-muted ms-4">
+                                    <small>Used in the United States.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Note:</strong> When viewing recipes, metric measurements will be automatically converted to imperial units based on your preference.
+                            Universal units like teaspoons, tablespoons, cups, pieces, and pinches remain unchanged.
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Save Preferences
+                                </button>
+                                <a asp-page="/Index" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left"></i> Back to Home
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-calculator"></i> Conversion Examples</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>→</th>
+                                <th>Imperial</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>100 grams</td>
+                                <td>→</td>
+                                <td>3.5 oz</td>
+                            </tr>
+                            <tr>
+                                <td>1 kilogram</td>
+                                <td>→</td>
+                                <td>2.2 lb</td>
+                            </tr>
+                            <tr>
+                                <td>250 milliliters</td>
+                                <td>→</td>
+                                <td>1 cup</td>
+                            </tr>
+                            <tr>
+                                <td>1 liter</td>
+                                <td>→</td>
+                                <td>1.1 qt</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="text-muted mb-0">
+                        <small>Your preference is saved and will be remembered across browser sessions.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

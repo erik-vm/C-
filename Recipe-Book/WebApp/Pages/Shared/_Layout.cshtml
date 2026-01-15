@@ -1,0 +1,209 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@ViewData["Title"] - Recipe Book</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/WebApp.styles.css" asp-append-version="true"/>
+    <script>
+        // Apply theme before page renders to avoid flash
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        })();
+    </script>
+</head>
+<body>
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand me-4" style="font-size: 28px" asp-area="" asp-page="/Index">
+                <i class="bi bi-journal-text"></i> Recipe Book
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse d-lg-inline-flex justify-content-between align-items-center" style="font-size: 15px;">
+                <ul class="navbar-nav gap-2 me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link px-3" asp-area="" asp-page="/Index">
+                            <i class="bi bi-house"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3" asp-area="" asp-page="/Recipes/Index">
+                            <i class="bi bi-book"></i> Recipes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3" asp-area="" asp-page="/Recipes/WhatCanIMake">
+                            <i class="bi bi-basket"></i> What Can I Make?
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3" asp-area="" asp-page="/Ingredients/Index">
+                            <i class="bi bi-list-ul"></i> Ingredients
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3 text-warning" asp-area="" asp-page="/Profile/AllergenProfile">
+                            <i class="bi bi-shield-exclamation"></i> Allergen Profile
+                        </a>
+                    </li>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-3 text-danger" asp-area="" asp-page="/Profile/Favorites">
+                                <i class="bi bi-heart-fill"></i> Favorites
+                            </a>
+                        </li>
+                    }
+                    <li class="nav-item">
+                        <a class="nav-link px-3" asp-area="" asp-page="/Profile/Preferences">
+                            <i class="bi bi-gear"></i> Preferences
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center gap-3 ms-3">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <span class="navbar-text text-light me-2">
+                            <i class="bi bi-person-circle"></i> @User.Identity.Name
+                        </span>
+                        <form method="post" asp-page="/Account/Logout" class="d-inline">
+                            <button type="submit" class="btn btn-outline-light btn-sm">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-page="/Account/Login" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </a>
+                        <a asp-page="/Account/Register" class="btn btn-primary btn-sm">
+                            <i class="bi bi-person-plus"></i> Register
+                        </a>
+                    }
+                    <button id="themeToggle" class="btn btn-outline-light btn-sm ms-2" title="Toggle dark mode">
+                        <i class="bi bi-moon-fill" id="themeIcon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main role="main" class="pb-5 mb-5">
+    @RenderBody()
+</main>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" id="successToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    @TempData["SuccessMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true" id="errorToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    @TempData["ErrorMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="toast align-items-center text-bg-info border-0" role="alert" aria-live="assertive" aria-atomic="true" id="infoToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    @TempData["InfoMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+</div>
+
+<footer class="border-top footer text-muted p-2">
+    <div class="container text-center">
+        ICD0008 <strong size="18">|</strong> &copy; 2025 - Recipe Book
+    </div>
+</footer>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+
+<script>
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const html = document.documentElement;
+
+    function updateThemeIcon() {
+        const currentTheme = html.getAttribute('data-bs-theme');
+        if (currentTheme === 'dark') {
+            themeIcon.className = 'bi bi-sun-fill';
+        } else {
+            themeIcon.className = 'bi bi-moon-fill';
+        }
+    }
+
+    function toggleTheme() {
+        const currentTheme = html.getAttribute('data-bs-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-bs-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon();
+    }
+
+    themeToggle.addEventListener('click', toggleTheme);
+
+    // Initialize icon on page load
+    updateThemeIcon();
+
+    // Toast notifications
+    document.addEventListener('DOMContentLoaded', function() {
+        const successToast = document.getElementById('successToast');
+        const errorToast = document.getElementById('errorToast');
+        const infoToast = document.getElementById('infoToast');
+
+        if (successToast) {
+            const toast = new bootstrap.Toast(successToast, { delay: 4000 });
+            toast.show();
+        }
+
+        if (errorToast) {
+            const toast = new bootstrap.Toast(errorToast, { delay: 5000 });
+            toast.show();
+        }
+
+        if (infoToast) {
+            const toast = new bootstrap.Toast(infoToast, { delay: 4000 });
+            toast.show();
+        }
+    });
+</script>
+
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

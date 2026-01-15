@@ -1,0 +1,68 @@
+@page
+@model WebApp.Pages.Recipes.DeletedModel
+@{
+    ViewData["Title"] = "Deleted Recipes";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="bi bi-trash"></i> Deleted Recipes</h3>
+        <a asp-page="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Recipes
+        </a>
+    </div>
+
+    @if (!Model.DeletedRecipes.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No deleted recipes found.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Categories</th>
+                        <th>Difficulty</th>
+                        <th>Total Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var recipe in Model.DeletedRecipes)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@recipe.Name</strong>
+                                @if (recipe.HasAllergens)
+                                {
+                                    <i class="bi bi-exclamation-triangle text-warning ms-2" title="Contains allergens"></i>
+                                }
+                            </td>
+                            <td>
+                                @if (recipe.Categories.Any())
+                                {
+                                    @string.Join(", ", recipe.Categories)
+                                }
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">@recipe.DifficultyLevel</span>
+                            </td>
+                            <td>@recipe.TotalTimeMinutes min</td>
+                            <td>
+                                <form method="post" asp-page-handler="Restore" asp-route-id="@recipe.Id" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Are you sure you want to restore this recipe?')">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

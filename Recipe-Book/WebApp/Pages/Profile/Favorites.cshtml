@@ -1,0 +1,101 @@
+@page
+@model WebApp.Pages.Profile.FavoritesModel
+@{
+    ViewData["Title"] = "My Favorite Recipes";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="bi bi-heart-fill text-danger"></i> My Favorite Recipes</h3>
+        <a asp-page="/Recipes/Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Recipes
+        </a>
+    </div>
+
+    @if (!Model.FavoriteRecipes.Any())
+    {
+        <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle"></i> You haven't added any favorite recipes yet.
+            <br />
+            <a asp-page="/Recipes/Index" class="alert-link">Browse recipes</a> to find your favorites!
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">You have @Model.FavoriteRecipes.Count favorite recipe(s)</p>
+
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var recipe in Model.FavoriteRecipes)
+            {
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">@recipe.Name</h5>
+                            <p class="card-text text-muted">
+                                @{
+                                    var description = recipe.Description.Replace("**", "").Replace("\n", " ");
+                                    var maxLength = 100;
+                                    var displayDescription = description.Length > maxLength
+                                        ? description.Substring(0, maxLength) + "..."
+                                        : description;
+                                }
+                                @displayDescription
+                            </p>
+
+                            <div class="mb-2">
+                                <span class="badge bg-primary">@recipe.DifficultyLevel</span>
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-clock"></i> @recipe.TotalTimeMinutes min
+                                </span>
+                                <span class="badge bg-info">
+                                    <i class="bi bi-people"></i> @recipe.BaseServingSize servings
+                                </span>
+                            </div>
+
+                            @if (recipe.HasAllergens)
+                            {
+                                <div class="allergen-badges mb-2">
+                                    @foreach (var allergen in recipe.AllergenWarnings.Take(3))
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-exclamation-triangle"></i> @allergen
+                                        </span>
+                                    }
+                                    @if (recipe.AllergenWarnings.Count > 3)
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            +@(recipe.AllergenWarnings.Count - 3) more
+                                        </span>
+                                    }
+                                </div>
+                            }
+
+                            @if (recipe.Categories.Any())
+                            {
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-tag"></i> @string.Join(", ", recipe.Categories)
+                                    </small>
+                                </div>
+                            }
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex gap-2">
+                                <a asp-page="/Recipes/Details" asp-route-id="@recipe.Id"
+                                   class="btn btn-sm btn-primary flex-grow-1">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <form method="post" asp-page-handler="RemoveFavorite" asp-route-recipeId="@recipe.Id" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Remove this recipe from favorites?')">
+                                        <i class="bi bi-heart-fill"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,301 @@
+@page
+@model WebApp.Pages.Recipes.CreateModel
+@{
+    ViewData["Title"] = "Create Recipe";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Create New Recipe</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label asp-for="Input.Name" class="form-label"></label>
+                            <input asp-for="Input.Name" class="form-control" />
+                            <span asp-validation-for="Input.Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Description" class="form-label"></label>
+                            <textarea asp-for="Input.Description" class="form-control" rows="4"
+                                      placeholder="Describe your recipe..."></textarea>
+                            <span asp-validation-for="Input.Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Input.BaseServingSize" class="form-label"></label>
+                                <input asp-for="Input.BaseServingSize" type="number" class="form-control" min="1" max="500" />
+                                <span asp-validation-for="Input.BaseServingSize" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Input.PrepTimeMinutes" class="form-label"></label>
+                                <input asp-for="Input.PrepTimeMinutes" type="number" class="form-control" min="0" max="1440" />
+                                <span asp-validation-for="Input.PrepTimeMinutes" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Input.CookTimeMinutes" class="form-label"></label>
+                                <input asp-for="Input.CookTimeMinutes" type="number" class="form-control" min="0" max="1440" />
+                                <span asp-validation-for="Input.CookTimeMinutes" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.DifficultyLevel" class="form-label"></label>
+                            <select asp-for="Input.DifficultyLevel" class="form-select" asp-items="Model.DifficultyLevels"></select>
+                            <span asp-validation-for="Input.DifficultyLevel" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.CategoryIds" class="form-label"></label>
+                            <select asp-for="Input.CategoryIds" class="form-select" asp-items="Model.AvailableCategories" multiple size="5"></select>
+                            <small class="form-text text-muted">Hold Ctrl (Cmd on Mac) to select multiple categories</small>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <h4>Ingredients</h4>
+                        <div id="ingredientsContainer">
+                            <p class="text-muted">Click "Add Ingredient" to start adding ingredients to your recipe.</p>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary mb-3" onclick="addIngredient()">
+                            <i class="bi bi-plus-lg"></i> Add Ingredient
+                        </button>
+
+                        <hr class="my-4" />
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-page="Index" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Create Recipe
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        let ingredientCount = 0;
+
+        const ingredientUnits = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.IngredientUnits));
+
+        const wholeUnits = [@((int)DAL.Entities.MeasurementUnit.Pieces), @((int)DAL.Entities.MeasurementUnit.Whole)];
+        const spoonUnits = [@((int)DAL.Entities.MeasurementUnit.Teaspoons), @((int)DAL.Entities.MeasurementUnit.Tablespoons)];
+
+        function addIngredient() {
+            const container = document.getElementById('ingredientsContainer');
+            if (ingredientCount === 0) {
+                container.innerHTML = '';
+            }
+
+            const ingredientHtml = `
+                <div class="card mb-2 ingredient-item" id="ingredient-${ingredientCount}">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label">Ingredient</label>
+                                <select name="Input.Ingredients[${ingredientCount}].IngredientId"
+                                        class="form-select ingredient-select"
+                                        data-index="${ingredientCount}"
+                                        required>
+                                    <option value="">Select ingredient...</option>
+                                    @foreach (var item in Model.AvailableIngredients)
+                                    {
+                                        <text><option value="@item.Value">@item.Text</option></text>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label">Amount</label>
+                                <input type="number" name="Input.Ingredients[${ingredientCount}].Amount"
+                                       class="form-control amount-input"
+                                       data-index="${ingredientCount}"
+                                       step="0.01" min="0.01" required />
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label">Unit</label>
+                                <select name="Input.Ingredients[${ingredientCount}].Unit"
+                                        class="form-select unit-select"
+                                        data-index="${ingredientCount}"
+                                        required>
+                                    @foreach (var unit in Model.MeasurementUnits)
+                                    {
+                                        <text><option value="@unit.Value">@unit.Text</option></text>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label">Prep Note</label>
+                                <input type="text" name="Input.Ingredients[${ingredientCount}].PrepNote"
+                                       class="form-control" placeholder="e.g., diced" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input type="checkbox" name="Input.Ingredients[${ingredientCount}].IsOptional"
+                                           class="form-check-input" id="optional-${ingredientCount}" />
+                                    <label class="form-check-label" for="optional-${ingredientCount}">
+                                        Optional ingredient
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button type="button" class="btn btn-sm btn-danger" onclick="removeIngredient(${ingredientCount})">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="Input.Ingredients[${ingredientCount}].SortOrder" value="${ingredientCount}" />
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', ingredientHtml);
+
+            const currentIndex = ingredientCount;
+            ingredientCount++;
+
+            setupIngredientListeners(currentIndex);
+        }
+
+        function setupIngredientListeners(index) {
+            const ingredientSelect = document.querySelector(`.ingredient-select[data-index="${index}"]`);
+            const unitSelect = document.querySelector(`.unit-select[data-index="${index}"]`);
+            const amountInput = document.querySelector(`.amount-input[data-index="${index}"]`);
+
+            if (ingredientSelect && unitSelect && amountInput) {
+                ingredientSelect.addEventListener('change', function() {
+                    const ingredientId = this.value;
+                    if (ingredientId && ingredientUnits[ingredientId]) {
+                        unitSelect.value = ingredientUnits[ingredientId];
+                        updateAmountRestrictions(amountInput, unitSelect.value);
+                    }
+                });
+
+                unitSelect.addEventListener('change', function() {
+                    updateAmountRestrictions(amountInput, this.value);
+                });
+            }
+        }
+
+        function updateAmountRestrictions(amountInput, unitValue) {
+            const unitInt = parseInt(unitValue);
+
+            if (wholeUnits.includes(unitInt)) {
+                amountInput.step = '1';
+                amountInput.min = '1';
+                const currentValue = parseFloat(amountInput.value);
+                if (currentValue && currentValue < 1) {
+                    amountInput.value = '1';
+                } else if (currentValue && !Number.isInteger(currentValue)) {
+                    amountInput.value = Math.round(currentValue).toString();
+                }
+            } else if (spoonUnits.includes(unitInt)) {
+                amountInput.step = '0.25';
+                amountInput.min = '0.25';
+                const currentValue = parseFloat(amountInput.value);
+                if (currentValue && currentValue < 0.25) {
+                    amountInput.value = '0.25';
+                }
+            } else {
+                amountInput.step = '0.01';
+                amountInput.min = '0.01';
+                const currentValue = parseFloat(amountInput.value);
+                if (currentValue && currentValue < 0.01) {
+                    amountInput.value = '0.01';
+                }
+            }
+        }
+
+        function removeIngredient(index) {
+            const element = document.getElementById(`ingredient-${index}`);
+            if (element) {
+                element.remove();
+            }
+        }
+
+        // Initialize ingredients from server model (for validation errors)
+        function initializeExistingIngredients() {
+            const existingIngredients = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Input.Ingredients ?? new List<BLL.DTOs.CreateRecipeIngredientDto>(), new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
+
+            console.log('Existing ingredients:', existingIngredients);
+
+            if (existingIngredients && existingIngredients.length > 0) {
+                existingIngredients.forEach((ing, idx) => {
+                    addIngredient();
+
+                    // Use setTimeout to ensure DOM is ready
+                    setTimeout(() => {
+                        console.log('Processing ingredient', idx, ':', ing);
+
+                        // Populate values - camelCase from JSON serialization
+                        const ingredientSelect = document.querySelector(`.ingredient-select[data-index="${idx}"]`);
+                        const unitSelect = document.querySelector(`.unit-select[data-index="${idx}"]`);
+                        const amountInput = document.querySelector(`.amount-input[data-index="${idx}"]`);
+                        const prepNoteInput = document.querySelector(`input[name="Input.Ingredients[${idx}].PrepNote"]`);
+                        const isOptionalCheckbox = document.querySelector(`input[name="Input.Ingredients[${idx}].IsOptional"]`);
+
+                        // Set ingredient select value
+                        if (ingredientSelect && ing.ingredientId) {
+                            ingredientSelect.value = ing.ingredientId.toString();
+                            console.log('Set ingredient select to:', ing.ingredientId, 'Result:', ingredientSelect.value);
+                            if (!ingredientSelect.value) {
+                                ingredientSelect.classList.add('is-invalid');
+                                console.error('Failed to set ingredient select value');
+                            }
+                        }
+
+                        // Set unit select value
+                        if (unitSelect && ing.unit !== undefined && ing.unit !== null) {
+                            unitSelect.value = ing.unit.toString();
+                            console.log('Set unit select to:', ing.unit, 'Result:', unitSelect.value);
+                            if (!unitSelect.value) {
+                                unitSelect.classList.add('is-invalid');
+                                console.error('Failed to set unit select value');
+                            }
+                        }
+
+                        // Set amount value
+                        if (amountInput && ing.amount) {
+                            amountInput.value = ing.amount;
+                            console.log('Set amount to:', ing.amount);
+                            if (unitSelect && unitSelect.value) {
+                                updateAmountRestrictions(amountInput, unitSelect.value);
+                            }
+                        }
+
+                        // Set prep note
+                        if (prepNoteInput && ing.prepNote) {
+                            prepNoteInput.value = ing.prepNote;
+                        }
+
+                        // Set is optional checkbox
+                        if (isOptionalCheckbox) {
+                            isOptionalCheckbox.checked = ing.isOptional || false;
+                        }
+                    }, 50);
+                });
+            } else {
+                // Add one ingredient by default if none exist
+                addIngredient();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            initializeExistingIngredients();
+        });
+    </script>
+}

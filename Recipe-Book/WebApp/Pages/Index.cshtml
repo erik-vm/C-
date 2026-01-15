@@ -1,0 +1,70 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Recipe Book";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 pt-3">
+            <h4>Available Recipes (@Model.Recipes.Count())</h4>
+
+            @if (!Model.Recipes.Any())
+            {
+                <div class="alert alert-info">
+                    No recipes found. The database seed data should have been loaded.
+                </div>
+            }
+            else
+            {
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    @foreach (var recipe in Model.Recipes)
+                    {
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">@recipe.Name</h5>
+                                    <p class="card-text">
+                                        @{
+                                            var description = recipe.Description.Length > 100
+                                                ? recipe.Description.Substring(0, 100) + "..."
+                                                : recipe.Description;
+                                        }
+                                        @description
+                                    </p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-primary">@recipe.DifficultyLevel</span>
+                                        <span class="badge bg-secondary">@recipe.TotalTimeMinutes min</span>
+                                        <span class="badge bg-info">@recipe.BaseServingSize servings</span>
+                                    </div>
+                                    @if (recipe.HasAllergens)
+                                    {
+                                        <div class="mb-2">
+                                            @foreach (var allergen in recipe.AllergenWarnings)
+                                            {
+                                                <span class="badge bg-warning text-dark">@allergen</span>
+                                            }
+                                        </div>
+                                    }
+                                    @if (recipe.Categories.Any())
+                                    {
+                                        <div class="mb-3">
+                                            <small class="text-muted">
+                                                @string.Join(", ", recipe.Categories)
+                                            </small>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <a asp-page="/Recipes/Details" asp-route-id="@recipe.Id" class="btn btn-primary w-100">
+                                        <i class="bi bi-eye"></i> View Recipe
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

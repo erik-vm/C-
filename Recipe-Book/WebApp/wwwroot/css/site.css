@@ -1,0 +1,154 @@
+html {
+  font-size: 14px;
+  position: relative;
+  min-height: 100%;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* Recipe Cards */
+.recipe-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #dee2e6;
+}
+
+.recipe-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-card .card-title {
+  color: #0d6efd;
+  font-weight: 600;
+}
+
+/* Allergen Badges */
+.allergen-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.allergen-badges .badge {
+  font-size: 0.75rem;
+}
+
+/* Ingredient Display */
+.ingredient-amount {
+  color: #0d6efd;
+  font-weight: 600;
+  min-width: 80px;
+  display: inline-block;
+}
+
+.ingredient-name {
+  color: #212529;
+}
+
+/* Serving Adjuster */
+#servingsInput {
+  -moz-appearance: textfield;
+}
+
+#servingsInput::-webkit-outer-spin-button,
+#servingsInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Ingredient Item in Create Form */
+.ingredient-item {
+  border-left: 3px solid #0d6efd;
+}
+
+/* Footer */
+.footer {
+  background-color: #f8f9fa;
+}
+
+/* Dark mode styles */
+[data-bs-theme="dark"] .footer {
+  background-color: #1a1d20;
+}
+
+[data-bs-theme="dark"] .navbar {
+  background-color: #1a1d20 !important;
+  border-bottom: 1px solid #495057;
+}
+
+[data-bs-theme="dark"] .card-header.bg-light {
+  background-color: #212529 !important;
+  color: #fff;
+}
+
+/* Toast notifications */
+.toast {
+  min-width: 300px;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.toast-body {
+  font-size: 0.95rem;
+  padding: 0.75rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .card-body {
+    padding: 1rem;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  .btn-group {
+    flex-direction: column;
+  }
+
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+}
+
+/* Success/Error Messages */
+.alert {
+  border-radius: 0.375rem;
+}
+
+.alert-success {
+  background-color: #d1e7dd;
+  border-color: #badbcc;
+  color: #0f5132;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  border-color: #f5c2c7;
+  color: #842029;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  border-color: #ffecb5;
+  color: #664d03;
+}
